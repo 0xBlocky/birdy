@@ -87,4 +87,8 @@ export class RedisStreamService extends EventEmitter {
   get connected(): boolean {
     return this.isConnected;
   }
+
+  getClient(): RedisClientType {
+    return this.client;
+  }
 }

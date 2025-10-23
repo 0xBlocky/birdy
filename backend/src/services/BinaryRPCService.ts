@@ -1,11 +1,14 @@
 import { WebSocket } from 'ws';
-import { 
-  BinaryRPCMessage, 
-  MessageType, 
-  StreamType, 
-  StreamSubscription, 
+import {
+  BinaryRPCMessage,
+  MessageType,
+  StreamType,
+  StreamSubscription,
   StreamFilters,
   TradingOpportunity,
+  Token,
+  UserPosition,
+  TradeTransaction,
   encodeBinaryRPCMessage,
   decodeBinaryRPCMessage
 } from 'shared';
@@ -112,8 +115,8 @@ export class BinaryRPCService {
   }
 
   async sendStreamData(
-    ws: WebSocket, 
-    streamId: string, 
+    ws: WebSocket,
+    streamId: string,
     opportunities: TradingOpportunity[]
   ): Promise<void> {
     try {
@@ -122,19 +125,100 @@ export class BinaryRPCService {
         streamType: StreamType.TRADING_OPPORTUNITIES,
         opportunities
       };
-      
+
       const payload = new TextEncoder().encode(JSON.stringify(streamData));
       const message = await encodeBinaryRPCMessage(
         MessageType.STREAM,
         this.getNextRequestId(),
         payload
       );
-      
+
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
       }
     } catch (error) {
       console.error('❌ Error sending stream data:', error);
+    }
+  }
+
+  async sendPriceUpdates(
+    ws: WebSocket,
+    streamId: string,
+    tokens: Token[]
+  ): Promise<void> {
+    try {
+      const streamData = {
+        streamId,
+        streamType: StreamType.PRICE_UPDATES,
+        tokens
+      };
+
+      const payload = new TextEncoder().encode(JSON.stringify(streamData));
+      const message = await encodeBinaryRPCMessage(
+        MessageType.STREAM,
+        this.getNextRequestId(),
+        payload
+      );
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    } catch (error) {
+      console.error('❌ Error sending price updates:', error);
+    }
+  }
+
+  async sendPositionUpdates(
+    ws: WebSocket,
+    streamId: string,
+    positions: UserPosition[]
+  ): Promise<void> {
+    try {
+      const streamData = {
+        streamId,
+        streamType: StreamType.BALANCE_UPDATES,
+        positions
+      };
+
+      const payload = new TextEncoder().encode(JSON.stringify(streamData));
+      const message = await encodeBinaryRPCMessage(
+        MessageType.STREAM,
+        this.getNextRequestId(),
+        payload
+      );
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    } catch (error) {
+      console.error('❌ Error sending position updates:', error);
+    }
+  }
+
+  async sendTransactionUpdates(
+    ws: WebSocket,
+    streamId: string,
+    transactions: TradeTransaction[]
+  ): Promise<void> {
+    try {
+      const streamData = {
+        streamId,
+        streamType: StreamType.ORDER_STATUS,
+        transactions
+      };
+
+      const payload = new TextEncoder().encode(JSON.stringify(streamData));
+      const message = await encodeBinaryRPCMessage(
+        MessageType.STREAM,
+        this.getNextRequestId(),
+        payload
+      );
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    } catch (error) {
+      console.error('❌ Error sending transaction updates:', error);
     }
   }
 

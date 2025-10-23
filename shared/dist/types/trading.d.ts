@@ -11,6 +11,76 @@ export interface TradingOpportunity {
     slippageTolerance: number;
     dexName: string;
 }
+export interface Token {
+    id: string;
+    symbol: string;
+    name: string;
+    contractAddress: string;
+    decimals: number;
+    currentPriceUSD: number;
+    currentPriceTON: number;
+    priceChange24h: number;
+    volume24h: number;
+    marketCap: number;
+    liquidity: number;
+    dexName: string;
+    pairAddress: string;
+    logoUrl?: string;
+    lastUpdated: number;
+}
+export interface UserPosition {
+    id: string;
+    userId: string;
+    tokenId: string;
+    amountHeld: number;
+    averageEntryPriceTON: number;
+    averageEntryPriceUSD: number;
+    totalInvestedTON: number;
+    totalInvestedUSD: number;
+    currentValueTON: number;
+    currentValueUSD: number;
+    unrealizedPnLTON: number;
+    unrealizedPnLUSD: number;
+    unrealizedPnLPercent: number;
+    firstPurchaseAt: number;
+    lastTransactionAt: number;
+    transactionCount: number;
+}
+export declare enum TradeType {
+    BUY = "BUY",
+    SELL = "SELL"
+}
+export declare enum TransactionStatus {
+    PENDING = "PENDING",
+    CONFIRMED = "CONFIRMED",
+    FAILED = "FAILED"
+}
+export interface TradeTransaction {
+    id: string;
+    userId: string;
+    tokenId: string;
+    type: TradeType;
+    amountToken: number;
+    amountTON: number;
+    pricePerTokenTON: number;
+    pricePerTokenUSD: number;
+    slippage: number;
+    feeTON: number;
+    txHash: string;
+    status: TransactionStatus;
+    blockNumber?: number;
+    dexName: string;
+    createdAt: number;
+    confirmedAt?: number;
+}
+export interface OpportunityRow {
+    token: Token;
+    position?: UserPosition;
+    isConnected: boolean;
+    isTrading: boolean;
+    lastTransaction?: TradeTransaction;
+    errorMessage?: string;
+}
 export interface StreamFilters {
     minProfitPotential?: number;
     maxSlippage?: number;
@@ -41,7 +111,10 @@ export interface BinaryRPCMessage {
 export interface StreamData {
     streamId: string;
     streamType: StreamType;
-    opportunities: TradingOpportunity[];
+    opportunities?: TradingOpportunity[];
+    tokens?: Token[];
+    positions?: UserPosition[];
+    transactions?: TradeTransaction[];
 }
 export interface ErrorResponse {
     code: number;

@@ -1,3 +1,18 @@
+// TypeScript interfaces matching protobuf schemas
+// ============================================================================
+// NEW: Trade Transaction (Trade History)
+// ============================================================================
+export var TradeType;
+(function (TradeType) {
+    TradeType["BUY"] = "BUY";
+    TradeType["SELL"] = "SELL";
+})(TradeType || (TradeType = {}));
+export var TransactionStatus;
+(function (TransactionStatus) {
+    TransactionStatus["PENDING"] = "PENDING";
+    TransactionStatus["CONFIRMED"] = "CONFIRMED";
+    TransactionStatus["FAILED"] = "FAILED";
+})(TransactionStatus || (TransactionStatus = {}));
 export var MessageType;
 (function (MessageType) {
     MessageType[MessageType["REQUEST"] = 0] = "REQUEST";

@@ -3,6 +3,7 @@ syntax = "proto3";
 package birdy.rpc;
 
 import "TradingOpportunity.proto";
+import "Token.proto";
 
 message BinaryRPCMessage {
   int32 version = 1;
@@ -39,7 +40,10 @@ message StreamFilters {
 message StreamData {
   string stream_id = 1;
   StreamType stream_type = 2;
-  repeated birdy.trading.TradingOpportunity opportunities = 3;
+  repeated birdy.trading.TradingOpportunity opportunities = 3;  // Legacy
+  repeated birdy.trading.Token tokens = 4;                      // New: for PRICE_UPDATES
+  repeated birdy.trading.UserPosition positions = 5;            // New: for BALANCE_UPDATES
+  repeated birdy.trading.TradeTransaction transactions = 6;     // New: for ORDER_STATUS
 }
 
 message ErrorResponse {

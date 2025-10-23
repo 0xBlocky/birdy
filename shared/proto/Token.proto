@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package birdy.trading;
+
+message Token {
+  // Core identification
+  string id = 1;
+  string symbol = 2;
+  string name = 3;
+  string contract_address = 4;
+  int32 decimals = 5;
+
+  // Pricing (real-time)
+  double current_price_usd = 6;
+  double current_price_ton = 7;
+  double price_change_24h = 8;
+
+  // Market data
+  double volume_24h = 9;
+  double market_cap = 10;
+  double liquidity = 11;
+
+  // DEX info
+  string dex_name = 12;
+  string pair_address = 13;
+
+  // Metadata
+  string logo_url = 14;
+  int64 last_updated = 15;
+}
+
+message UserPosition {
+  // Position identification
+  string id = 1;
+  string user_id = 2;
+  string token_id = 3;
+
+  // Position details
+  double amount_held = 4;
+  double average_entry_price_ton = 5;
+  double average_entry_price_usd = 6;
+  double total_invested_ton = 7;
+  double total_invested_usd = 8;
+
+  // P&L calculations
+  double current_value_ton = 9;
+  double current_value_usd = 10;
+  double unrealized_pnl_ton = 11;
+  double unrealized_pnl_usd = 12;
+  double unrealized_pnl_percent = 13;
+
+  // Tracking
+  int64 first_purchase_at = 14;
+  int64 last_transaction_at = 15;
+  int32 transaction_count = 16;
+}
+
+enum TradeType {
+  BUY = 0;
+  SELL = 1;
+}
+
+enum TransactionStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  FAILED = 2;
+}
+
+message TradeTransaction {
+  // Transaction identification
+  string id = 1;
+  string user_id = 2;
+  string token_id = 3;
+
+  // Transaction details
+  TradeType type = 4;
+  double amount_token = 5;
+  double amount_ton = 6;
+  double price_per_token_ton = 7;
+  double price_per_token_usd = 8;
+
+  // Fees & slippage
+  double slippage = 9;
+  double fee_ton = 10;
+
+  // On-chain data
+  string tx_hash = 11;
+  TransactionStatus status = 12;
+  int64 block_number = 13;
+
+  // DEX info
+  string dex_name = 14;
+
+  // Timestamps
+  int64 created_at = 15;
+  int64 confirmed_at = 16;
+}

@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws';
-import { TradingOpportunity, StreamFilters, StreamType } from 'shared';
+import { TradingOpportunity, StreamFilters, StreamType, Token } from 'shared';
 import { BinaryRPCService } from './BinaryRPCService';
 
 interface ClientSubscription {
@@ -42,30 +42,71 @@ export class OpportunityStreamManager {
 
   broadcastOpportunity(opportunity: TradingOpportunity): void {
     const clientsToNotify: WebSocket[] = [];
-    
+
     // Filter clients based on their subscription filters
     for (const [ws, subscription] of this.clients) {
-      if (this.matchesFilters(opportunity, subscription.filters)) {
+      if (subscription.streamType === StreamType.TRADING_OPPORTUNITIES &&
+          this.matchesFilters(opportunity, subscription.filters)) {
         clientsToNotify.push(ws);
       }
     }
-    
+
     if (clientsToNotify.length > 0) {
       console.log(`📡 Broadcasting opportunity ${opportunity.id} to ${clientsToNotify.length} clients`);
-      
+
       // Send to each matching client
       clientsToNotify.forEach(async (ws) => {
         try {
           const subscription = this.clients.get(ws);
           if (subscription) {
             await this.binaryRPCService.sendStreamData(
-              ws, 
-              subscription.streamId, 
+              ws,
+              subscription.streamId,
               [opportunity]
             );
           }
         } catch (error) {
           console.error('❌ Error broadcasting to client:', error);
+          this.removeClient(ws);
+        }
+      });
+    }
+  }
+
+  broadcastPriceUpdates(tokens: Token[]): void {
+    const clientsToNotify: WebSocket[] = [];
+
+    // Find all clients subscribed to PRICE_UPDATES
+    for (const [ws, subscription] of this.clients) {
+      if (subscription.streamType === StreamType.PRICE_UPDATES) {
+        clientsToNotify.push(ws);
+      }
+    }
+
+    if (clientsToNotify.length > 0) {
+      console.log(`📡 Broadcasting price updates for ${tokens.length} tokens to ${clientsToNotify.length} clients`);
+
+      // Send to each subscribed client
+      clientsToNotify.forEach(async (ws) => {
+        try {
+          const subscription = this.clients.get(ws);
+          if (subscription) {
+            // Filter tokens if client has token filters
+            let filteredTokens = tokens;
+            if (subscription.filters?.tokens && subscription.filters.tokens.length > 0) {
+              filteredTokens = tokens.filter(token =>
+                subscription.filters!.tokens!.includes(token.symbol)
+              );
+            }
+
+            await this.binaryRPCService.sendPriceUpdates(
+              ws,
+              subscription.streamId,
+              filteredTokens
+            );
+          }
+        } catch (error) {
+          console.error('❌ Error broadcasting price updates to client:', error);
           this.removeClient(ws);
         }
       });
