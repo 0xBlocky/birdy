@@ -1,22 +1,44 @@
 // Protobuf utilities for encoding/decoding
 import * as protobuf from 'protobufjs';
-import { TradingOpportunity } from './types/trading';
 
 let root: protobuf.Root | null = null;
 
 export async function loadProtobufRoot(): Promise<protobuf.Root> {
   if (!root) {
-    root = await protobuf.load([
-      'proto/TradingOpportunity.proto',
-      'proto/BinaryRPC.proto'
-    ]);
+    // Create the protobuf definitions directly instead of loading from files
+    root = new protobuf.Root();
+    
+    // Define TradingOpportunity message
+    const TradingOpportunity = new protobuf.Type("TradingOpportunity");
+    TradingOpportunity.add(new protobuf.Field("id", 1, "string"));
+    TradingOpportunity.add(new protobuf.Field("timestamp", 2, "int64"));
+    TradingOpportunity.add(new protobuf.Field("token_in", 3, "string"));
+    TradingOpportunity.add(new protobuf.Field("token_out", 4, "string"));
+    TradingOpportunity.add(new protobuf.Field("current_price", 5, "double"));
+    TradingOpportunity.add(new protobuf.Field("target_price", 6, "double"));
+    TradingOpportunity.add(new protobuf.Field("profit_potential", 7, "double"));
+    TradingOpportunity.add(new protobuf.Field("confidence", 8, "int32"));
+    TradingOpportunity.add(new protobuf.Field("metadata", 9, "string"));
+    TradingOpportunity.add(new protobuf.Field("slippage_tolerance", 10, "double"));
+    TradingOpportunity.add(new protobuf.Field("dex_name", 11, "string"));
+    
+    // Define BinaryRPCMessage
+    const BinaryRPCMessage = new protobuf.Type("BinaryRPCMessage");
+    BinaryRPCMessage.add(new protobuf.Field("version", 1, "int32"));
+    BinaryRPCMessage.add(new protobuf.Field("message_type", 2, "int32"));
+    BinaryRPCMessage.add(new protobuf.Field("request_id", 3, "int32"));
+    BinaryRPCMessage.add(new protobuf.Field("payload", 4, "bytes"));
+    
+    // Add to root
+    root.add(TradingOpportunity);
+    root.add(BinaryRPCMessage);
   }
   return root;
 }
 
-export async function encodeTradingOpportunity(opportunity: TradingOpportunity): Promise<Uint8Array> {
+export async function encodeTradingOpportunity(opportunity: any): Promise<Uint8Array> {
   const root = await loadProtobufRoot();
-  const TradingOpportunityMessage = root.lookupType('birdy.trading.TradingOpportunity');
+  const TradingOpportunityMessage = root.lookupType('TradingOpportunity');
   
   const message = TradingOpportunityMessage.create({
     id: opportunity.id,
@@ -35,11 +57,11 @@ export async function encodeTradingOpportunity(opportunity: TradingOpportunity):
   return TradingOpportunityMessage.encode(message).finish();
 }
 
-export async function decodeTradingOpportunity(data: Uint8Array): Promise<TradingOpportunity> {
+export async function decodeTradingOpportunity(data: Uint8Array): Promise<any> {
   const root = await loadProtobufRoot();
-  const TradingOpportunityMessage = root.lookupType('birdy.trading.TradingOpportunity');
+  const TradingOpportunityMessage = root.lookupType('TradingOpportunity');
   
-  const message = TradingOpportunityMessage.decode(data);
+  const message = TradingOpportunityMessage.decode(data) as any;
   
   return {
     id: message.id,
@@ -62,7 +84,7 @@ export async function encodeBinaryRPCMessage(
   payload: Uint8Array
 ): Promise<Uint8Array> {
   const root = await loadProtobufRoot();
-  const BinaryRPCMessage = root.lookupType('birdy.rpc.BinaryRPCMessage');
+  const BinaryRPCMessage = root.lookupType('BinaryRPCMessage');
   
   const message = BinaryRPCMessage.create({
     version: 1,
@@ -81,9 +103,9 @@ export async function decodeBinaryRPCMessage(data: Uint8Array): Promise<{
   payload: Uint8Array;
 }> {
   const root = await loadProtobufRoot();
-  const BinaryRPCMessage = root.lookupType('birdy.rpc.BinaryRPCMessage');
+  const BinaryRPCMessage = root.lookupType('BinaryRPCMessage');
   
-  const message = BinaryRPCMessage.decode(data);
+  const message = BinaryRPCMessage.decode(data) as any;
   
   return {
     version: message.version,

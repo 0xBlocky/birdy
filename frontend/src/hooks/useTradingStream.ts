@@ -32,7 +32,8 @@ export function useTradingStream(filters?: StreamFilters) {
         setConnectionStatus('connected');
 
         // Subscribe to trading opportunities stream
-        const newStreamId = await client.subscribeToTradingOpportunities(filters);
+        const response = await client.subscribeToTradingOpportunities(filters);
+        const newStreamId = response.streamId;
         
         if (!mounted) return;
 

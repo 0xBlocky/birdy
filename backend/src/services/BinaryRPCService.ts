@@ -39,14 +39,37 @@ export class BinaryRPCService {
     message: BinaryRPCMessage, 
     streamManager: any
   ): Promise<void> {
-    // For now, just echo back the request
-    const response = await encodeBinaryRPCMessage(
-      MessageType.RESPONSE,
-      message.requestId,
-      message.payload
-    );
-    
-    ws.send(response);
+    try {
+      // Parse the request payload to determine the type
+      const requestData = JSON.parse(new TextDecoder().decode(message.payload));
+      
+      if (requestData.streamType) {
+        // This is a stream subscription request
+        await this.handleStreamSubscription(ws, message, streamManager);
+      } else {
+        // Regular request - echo back
+        const response = await encodeBinaryRPCMessage(
+          MessageType.RESPONSE,
+          message.requestId,
+          message.payload
+        );
+        ws.send(response);
+      }
+    } catch (error) {
+      console.error('❌ Error handling request:', error);
+      // Send error response
+      const errorResponse = {
+        code: 400,
+        message: 'Invalid request format'
+      };
+      const payload = new TextEncoder().encode(JSON.stringify(errorResponse));
+      const response = await encodeBinaryRPCMessage(
+        MessageType.RESPONSE,
+        message.requestId,
+        payload
+      );
+      ws.send(response);
+    }
   }
 
   private async handleStreamSubscription(
